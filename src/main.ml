@@ -13,6 +13,7 @@ type t_field =
 
 type t_db =
   { db_name:string;
+    db_alias:string;
     db_fields: t_field list }
 
 let print_autogen_stubs out db : unit =
@@ -137,83 +138,184 @@ class %s {
   print_update_fn out db;
   print_delete_fn out db.db_name;
   print_search_fn out db;
-  (*TODO search*)
-
-
   Printf.fprintf out "
 }
 ?>"
-(*
-		public function get_articles ($que,$pag,$cat,$cri) {
-		$page = ($pag>0) ? (int) $pag : 1 ;
-		$category = $cat ;
-		$sql_order = 'nom';
-		$sql_cat = "`type` = '$cat' AND ";
-		
-		switch ($cat) {
-		case 'Album': case 'Concert': 
-			$sql_order = 'artiste'; 
-			break;
-		case 'Live': case 'Interview': case 'Livre': 
-		case 'DVD': case 'RockFr':  case 'Groupe':
-			break;
-		case 'JeuneTalent': 
-			$sql_cat = "`type` = 'Jeune Talent' AND ";
-			break;
-		case 'AlbumDuMois': 
-			$sql_cat = "`type` = 'Album du Mois' AND ";
-			break;
-		default:
-			$category = 'All';
-			$sql_cat = '';
-		}
 
-		switch ($cri) {
-		case 'Album':	
-			$arr = array("%$que%");
-			$sql_like='`nom` LIKE ?';
-		       	break;
-		case 'Artiste':
-			$arr = array("%$que%");
-			$sql_like='`artiste` LIKE ?';
-			break;
-		case 'Annee':	
-			$arr = array("%$que%");
-			$sql_like='`annee` LIKE ?';
-			break;
-		default: 
-			$arr = array_fill(0,3,"%$que%");
-			$sql_like="( `nom` LIKE ? OR `artiste` LIKE ? OR `annee` LIKE ? )";
-		}
+let print_create_form db =
+(*   let model_name = "Model" ^ (String.capitalize_ascii db.db_name) in *)
+  let out = open_out ("create_" ^ db.db_name ^ ".php") in
+  Printf.fprintf out "<!DOCTYPE html>
+<html lang=\"fr\">
+    <head>
+        <meta charset=\"utf-8\">
+        <title>%s Creation</title>
+        <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
+    </head>
+    <body>
+        <main style=\"width:600px;margin:auto\">
+        <form class=\"pure-form pure-form-stacked\">
+            <fieldset>
+                <legend>%s Creation</legend>" db.db_alias db.db_alias;
+  List.iter (fun fd ->
+      if not fd.f_autogenerate then
+        match fd.f_type with
+        | VarChar ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" type=\"text\" placeholder=\"%s\" required>"
+            fd.f_name fd.f_alias fd.f_name fd.f_alias
+        | Date ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" type=\"date\" required>"
+            fd.f_name fd.f_alias fd.f_name
+        | Text ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <textarea id=\"%s\" required>%s</textarea>"
+            fd.f_name fd.f_alias fd.f_name fd.f_alias
+        | Set elts ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <select id=\"%s\" multiple required>" fd.f_name fd.f_alias fd.f_name;
+          List.iter (fun x ->
+              Printf.fprintf out "
+                <option>%s</option>" x
+            ) elts;
+          Printf.fprintf out "
+            </select>"
+    ) db.db_fields;
+  Printf.fprintf out "
+                <button type=\"submit\" class=\"pure-button pure-button-primary\">Create</button>
+            </fieldset>
+        </form>
+        </main>
+    </body>
+</html>"
 
-		$limit=($page-1)*20;
-		$sql = "SELECT `id`,`type`,`artiste`,`nom`,`annee`,`image`,`incontournable`,`url` FROM `bdd_rock_4` WHERE 
-			$sql_cat $sql_like ORDER BY `$sql_order` LIMIT $limit,20";
-		
-		$stmt = $this->db->prepare($sql) ;
-		$stmt->execute($arr) ;
-		
-		$sql2 = "SELECT COUNT(`id`) FROM `bdd_rock_4` WHERE $sql_cat $sql_like";
-		$stmt2 = $this->db->prepare($sql2) ;
-		$stmt2->execute($arr) ;
-		$count = $stmt2->fetch();
-		$nb = $count[0];
+let print_update_form db =
+  let out = open_out ("update_" ^ db.db_name ^ ".php") in
+  Printf.fprintf out "<!DOCTYPE html>
+<html lang=\"fr\">
+    <head>
+        <meta charset=\"utf-8\">
+        <title>%s Update</title>
+        <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
+    </head>
+    <body>
+        <main style=\"width:600px;margin:auto\">
+        <form class=\"pure-form pure-form-stacked\">
+            <fieldset>
+                <legend>%s Update</legend>
+                <input id=\"id\" type=\"hidden\" placeholder=\"<?php=$arr['id'];?>\">"
+    db.db_alias db.db_alias;
+  List.iter (fun fd ->
+      if not fd.f_autogenerate then
+        match fd.f_type with
+        | VarChar ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" type=\"text\" placeholder=\"<?php=$arr['%s'];?>\" required>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
+        | Date ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" type=\"date\" placeholder=\"<?php=$arr['%s'];?>\" required>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
+        | Text ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <textarea id=\"%s\" required><?php=$arr['%s'];?></textarea>"
+            fd.f_name fd.f_alias fd.f_name fd.f_alias
+        | Set elts ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <select id=\"%s\" multiple>
+            <?php
+                $tags = explode(\",\",$arr['%s']);"
+            fd.f_name fd.f_alias fd.f_name fd.f_name;
+          List.iter (fun x ->
+              Printf.fprintf out "
+                if(array_in('%s',$tags)){ echo '<option selected>%s</option>'; }
+                else { echo '<option>%s</option>'; }"
+                x x x
+            ) elts;
+          Printf.fprintf out "
+            ?>
+            </select>"
+    ) db.db_fields;
+  Printf.fprintf out "
+                <button type=\"submit\" class=\"pure-button pure-button-primary\">Update</button>
+            </fieldset>
+        </form>
+        </main>
+    </body>
+</html>"
 
-		$articles = array();
-		$articles['que'] = $que;
-		$articles['pag'] = $page ;
-		$articles['cat'] = $category ;
-		$articles['cri'] = $cri ;
+let print_delete_form db =
+  let out = open_out ("delete_" ^ db.db_name ^ ".php") in
+  Printf.fprintf out "<!DOCTYPE html>
+<html lang=\"fr\">
+    <head>
+        <meta charset=\"utf-8\">
+        <title>%s Deletion</title>
+        <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
+    </head>
+    <body>
+        <main style=\"width:600px;margin:auto\">
+        <form class=\"pure-form pure-form-stacked\">
+            <fieldset>
+                <legend>%s Deletion</legend>
+                <input id=\"id\" type=\"hidden\" placeholder=\"<?php=$arr['id'];?>\">"
+    db.db_alias db.db_alias;
+  List.iter (fun fd ->
+      if not fd.f_autogenerate then
+        match fd.f_type with
+        | VarChar ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" type=\"text\" placeholder=\"<?php=$arr['%s'];?>\" disabled>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
+        | Date ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" type=\"date\" placeholder=\"<?php=$arr['%s'];?>\" disabled>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
+        | Text ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <textarea id=\"%s\" disabled><?php=$arr['%s'];?></textarea>"
+            fd.f_name fd.f_alias fd.f_name fd.f_alias
+        | Set elts ->
+          Printf.fprintf out "
+            <label for=\"%s\">%s</label>
+            <select id=\"%s\" multiple disabled>
+            <?php
+                $tags = explode(\",\",$arr['%s']);"
+            fd.f_name fd.f_alias fd.f_name fd.f_name;
+          List.iter (fun x ->
+              Printf.fprintf out "
+                if(array_in('%s',$tags)){ echo '<option selected>%s</option>'; }
+                else { echo '<option>%s</option>'; }"
+                x x x
+            ) elts;
+          Printf.fprintf out "
+            ?>
+            </select>"
+    ) db.db_fields;
+  Printf.fprintf out "
+                <button type=\"submit\" class=\"pure-button pure-button-primary\">Delete</button>
+            </fieldset>
+        </form>
+        </main>
+    </body>
+</html>"
 
-		$articles['nb'] = $nb; 
-		$articles['max_page'] = ceil($nb/20); 
-		$articles['articles'] = $stmt->fetchAll();
-		return $articles;
-	}
-	
-*)
+
 let db_test =
-  { db_name = "Test";
+  { db_name = "test";
+    db_alias = "Test";
     db_fields = [ 
       { f_name="url"; f_alias="Url"; f_select=true; f_autogenerate=true; f_type=VarChar };
       { f_name="album"; f_alias="Album Name"; f_select=false; f_autogenerate=false; f_type=VarChar };
@@ -224,4 +326,7 @@ let db_test =
   }
 
 let _ =
-  print_model db_test
+  print_model db_test;
+  print_create_form db_test;
+  print_update_form db_test;
+  print_delete_form db_test
