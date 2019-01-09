@@ -1,39 +1,38 @@
 open Types
 
+let pp_string out s = Printf.fprintf out "%s" s
+
 let print_create_fn out db : unit =
-  let non_gen_fields = List.filter (fun f -> not f.f_autogenerate) db.db_fields in
-  let params = String.concat "," (List.map (fun f -> "$"^f.f_name) non_gen_fields) in
-  let field_names = String.concat "," (List.map (fun f -> f.f_name) db.db_fields) in
-  let qmarks = String.concat "," (List.map (fun f -> "?") db.db_fields) in
-  let vars = String.concat "," (List.map (fun f -> "$"^f.f_name) db.db_fields) in
+  let params = String.concat "," (List.map (fun f -> "$"^f.f_name) db.db_fields) in
+  let field_name_list =
+    (List.map (fun f -> f.f_name) db.db_fields)
+    @(List.map (fun f -> f.a_name) db.db_autogen_fields)
+  in
+  let field_names = String.concat "," field_name_list in
+  let qmarks = String.concat "," (List.map (fun _ -> "?") field_name_list) in
+  let vars = String.concat "," (List.map (fun f -> "$"^f) field_name_list) in
   Printf.fprintf out "
         public function create(%s){
                 $sql = 'INSERT INTO `%s` (%s) VALUES (%s)';
                 $stmt = $this->db->prepare($sql);"
     params db.db_name field_names qmarks;
   List.iter (fun f ->
-      if f.f_autogenerate then
-        Printf.fprintf out "
-                $%s = _gen%s(%s);" f.f_name (String.capitalize_ascii f.f_name) params (*FIXME*)
-    ) db.db_fields;
+      let lst = List.map (fun s -> "$" ^ s) f.a_gen_fun_params in
+      Printf.fprintf out "
+                $%s = %s(%a);" f.a_name f.a_gen_fun_name (pp_list pp_string ",") lst
+    ) db.db_autogen_fields;
   Printf.fprintf out "
                 return $stmt->execute(array(%s));
         }\n" vars
 
 let print_update_fn out db : unit =
-  let non_gen_fields = List.filter (fun f -> not f.f_autogenerate) db.db_fields in
-  let params = String.concat "," (List.map (fun f -> "$"^f.f_name) non_gen_fields) in
+  let params = String.concat "," (List.map (fun f -> "$"^f.f_name) db.db_fields) in
   let field_eq_qmark = String.concat "," (List.map (fun f -> "`" ^ f.f_name ^ "` = ?" ) db.db_fields) in
   let vars = String.concat "," (List.map (fun f -> "$"^f.f_name) db.db_fields) in
   Printf.fprintf out "
         public function update($id,%s){
                 $sql = 'UPDATE `%s` SET %s WHERE `id` = ?';
                 $stmt = $this->db->prepare($sql);" params db.db_name field_eq_qmark;
-  List.iter (fun f ->
-      if f.f_autogenerate then
-        Printf.fprintf out "
-                $%s = _gen%s(%s);" f.f_name (String.capitalize_ascii f.f_name) vars (*FIXME*)
-    ) db.db_fields;
   Printf.fprintf out "
                 return $stmt->execute(array(%s,id));
         }\n" vars
@@ -99,11 +98,15 @@ let print_list_fn out db : unit =
                 return $stmt->fetchAll();
         }" db.db_name
 
-let print (db:t_db) : unit =
+let print dir (db:t_db) : unit =
   let model_name = "Model" ^ (String.capitalize_ascii db.db_name) in
-  let out = open_out (model_name ^ ".class.php") in
+  let out = open_out (dir ^ "/" ^ model_name ^ ".class.php") in
   Printf.fprintf out "<?php
-class %s {
+";
+  (if db.db_autogen_fields != [] then
+     Printf.fprintf out "require(\"autogen.php\")
+";);
+Printf.fprintf out "class %s {
 	private $db;
 
         public function __construct($db){

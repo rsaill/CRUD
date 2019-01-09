@@ -2,13 +2,12 @@ open Types
 
 let print_delete_php_code out db =
   let model_name = "Model" ^ (String.capitalize_ascii db.db_name) in
-  let non_auto_gen_fields = (List.filter (fun f -> not(f.f_autogenerate)) db.db_fields) in
   let pp_error out fd : unit = Printf.fprintf out "'%s' => 'Error'" fd.f_name in
   Printf.fprintf out "<?php
 include('auth.php');
 include('db.php');
 include('%s.class.php');
-$model = new %s(db);
+$model = new %s(new db());
 
 if(isset($_POST['id'])){
     if($model->delete($_POST['id'])){
@@ -28,10 +27,10 @@ if(isset($_GET['id']) || isset($_POST['id'])){
 } else {
         $arr = $error_err;
 }
-?>" model_name model_name (pp_list pp_error ", ") non_auto_gen_fields
+?>" model_name model_name (pp_list pp_error ", ") db.db_fields
 
-let print db =
-  let out = open_out ("delete_" ^ db.db_name ^ ".php") in
+let print dir db =
+  let out = open_out (dir ^ "/delete_" ^ db.db_name ^ ".php") in
   print_delete_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
 <html lang=\"fr\">
@@ -52,7 +51,6 @@ let print db =
                 <input id=\"id\" type=\"hidden\" placeholder=\"<?php=$arr['id'];?>\">"
     db.db_alias db.db_alias;
   List.iter (fun fd ->
-      if not fd.f_autogenerate then
         match fd.f_type with
         | VarChar ->
           Printf.fprintf out "

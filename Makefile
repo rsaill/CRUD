@@ -1,6 +1,6 @@
 .PHONY: clean all main
 
-OCB_OPT=-Is src -use-ocamlfind
+OCB_OPT=-Is src -use-ocamlfind -pkg toml
 
 all: main
 

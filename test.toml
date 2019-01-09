@@ -1,0 +1,53 @@
+[test]
+alias = "Test"
+
+album.alias="Album Name"
+album.select=false
+album.type="VarChar"
+album.display=true
+
+band.alias="Band name"
+band.select=false
+band.type="VarChar"
+band.display=true
+
+date.alias="Date"
+date.select=false
+date.type="Date"
+date.display=false
+
+tags.alias="Tags"
+tags.select=false
+tags.type=["Live","Album"]
+tags.display=false
+
+content.alias="Content"
+content.select=false
+content.type="Text"
+content.display=false
+
+url.alias="Url"
+url.select=true
+url.generator_name="genAlbumUrl"
+url.generator_parameters=["album","band"]
+url.display=false
+
+[actu_6]
+
+database="actu_6"
+alias = "Actu"
+
+title.alias="Titre"
+title.select=false
+title.type="VarChar"
+title.display=true
+
+date.alias="Date"
+date.select=false
+date.type="Date"
+date.display=true
+
+content.alias="Content"
+content.select=false
+content.type="Text"
+content.display=false

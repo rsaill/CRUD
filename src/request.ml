@@ -12,8 +12,8 @@ $offset = isset($_GET['p'])? $_GET['offset'] : 0;
 $result = $model->list($offset);
 ?>" model_name model_name
 
-let print db : unit =
-  let out = open_out ("list_" ^ db.db_name ^ ".php") in
+let print dir db : unit =
+  let out = open_out (dir ^ "/list_" ^ db.db_name ^ ".php") in
   print_list_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
 <html lang=\"fr\">
