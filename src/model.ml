@@ -60,8 +60,8 @@ let print_delete_fn out db_name : unit =
         public function delete($id){
 		$sql = 'DELETE FROM `%s` WHERE `id`= ?';
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($id));
-	}" db_name
+		return $stmt->execute(array($id));
+	}\n" db_name
 
 let print_search_fn out db : unit =
   Printf.fprintf out "
@@ -87,14 +87,15 @@ let print_search_fn out db : unit =
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute(array($arr_val));
                 return $stmt->fetchAll();
-        }" db.db_name
+        }\n" db.db_name
 
 let print_list_fn out db : unit =
   Printf.fprintf out "
-        public function list($offset){
-                $sql = 'SELECT * FROM `%s` ORDER BY `id` DESC LIMIT 20 OFFSET ?';
+        public function enumerate($offset){
+                $offset = max(0,$offset);
+                $sql = 'SELECT * FROM `%s` ORDER BY `id` DESC LIMIT 20 OFFSET '.$offset;
 		$stmt = $this->db->prepare($sql);
-		$stmt->execute(min(0,$offset));
+		$stmt->execute();
                 return $stmt->fetchAll();
         }" db.db_name
 
@@ -104,7 +105,8 @@ let print dir (db:t_db) : unit =
   Printf.fprintf out "<?php
 ";
   (if db.db_autogen_fields != [] then
-     Printf.fprintf out "require(\"autogen.php\")
+     Printf.fprintf out "require(\"autogen.php\");
+
 ";);
 Printf.fprintf out "class %s {
 	private $db;

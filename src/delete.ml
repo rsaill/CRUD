@@ -7,7 +7,8 @@ let print_delete_php_code out db =
 include('auth.php');
 include('db.php');
 include('%s.class.php');
-$model = new %s(new db());
+
+$model = new %s($db);
 
 if(isset($_POST['id'])){
     if($model->delete($_POST['id'])){
@@ -45,32 +46,32 @@ let print dir db =
                 if(isset($msg)){ echo $msg; }
         ?>
 
-        <form class=\"pure-form pure-form-stacked\">
+        <form action=\"\" method=\"post\" class=\"pure-form pure-form-stacked\">
             <fieldset>
                 <legend>%s Deletion</legend>
-                <input id=\"id\" type=\"hidden\" placeholder=\"<?php=$arr['id'];?>\">"
+                <input name=\"id\" type=\"hidden\" value=\"<?php echo $arr['id'];?>\">"
     db.db_alias db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <input id=\"%s\" type=\"text\" placeholder=\"<?php=$arr['%s'];?>\" disabled>"
+            <input name=\"%s\" type=\"text\" value=\"<?php echo $arr['%s'];?>\" disabled>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Date ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <input id=\"%s\" type=\"date\" placeholder=\"<?php=$arr['%s'];?>\" disabled>"
+            <input name=\"%s\" type=\"date\" value=\"<?php echo $arr['%s'];?>\" disabled>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Text ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <textarea id=\"%s\" disabled><?php=$arr['%s'];?></textarea>"
-            fd.f_name fd.f_alias fd.f_name fd.f_alias
+            <textarea name=\"%s\" disabled><?php echo $arr['%s'];?></textarea>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
         | Set elts ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <select id=\"%s\" multiple disabled>
+            <select name=\"%s\" multiple disabled>
             <?php
                 $tags = explode(\",\",$arr['%s']);"
             fd.f_name fd.f_alias fd.f_name fd.f_name;

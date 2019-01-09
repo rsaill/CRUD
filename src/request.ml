@@ -8,8 +8,8 @@ include('auth.php');
 include('%s.class.php');
 
 $model = new %s($db);
-$offset = isset($_GET['p'])? $_GET['offset'] : 0;
-$result = $model->list($offset);
+$offset = isset($_GET['offset'])? $_GET['offset'] : 0;
+$result = $model->enumerate($offset);
 ?>" model_name model_name
 
 let print dir db : unit =
@@ -41,16 +41,19 @@ let print dir db : unit =
             <tbody>
 <?
     foreach($result as $line){
-        echo '<tr>';";
-  List.iter (fun fd ->
+        echo '<tr>';
+        echo '<td>',$line['id'],'</td>';";
+  List.iter (fun fd -> (*FIXME autogen*)
       if fd.f_display then
         Printf.fprintf out "
-echo '<td>',$line['%s'],'</td>';
-echo '<td><a href=\"update_%s.php?id=',$line['id'],'\">Update</a></td>';
-echo '<td><a href=\"delete_%s.php?id=',$line['id'],'\">Delete</a></td>';"
-        db.db_name db.db_name fd.f_name
+echo '<td>',$line['%s'],'</td>';" fd.f_name
     ) db.db_fields;
   Printf.fprintf out "
+echo '<td><a href=\"update_%s.php?id=',$line['id'],'\">Update</a></td>';
+echo '<td><a href=\"delete_%s.php?id=',$line['id'],'\">Delete</a></td>';"
+    db.db_name db.db_name;
+  Printf.fprintf out "
+        echo '</tr>';
     }
 ?>
         </tbody>

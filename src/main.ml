@@ -79,7 +79,6 @@ let read_db (toml_table:TomlTypes.table) : t_db =
     db_fields = toml_to_table_list toml_to_field (find_err "fields" toml_table "No fields found.");
     db_autogen_fields = toml_to_table_list toml_to_autogen_field (find_def "autogen_fields" toml_table (TArray (NodeTable [])));
   }
-
 let run_on_file fn =
   match Toml.Parser.from_filename fn with
   | `Ok toml_table ->
@@ -102,3 +101,36 @@ let args = [
 ]
 
 let _ = Arg.parse args run_on_file ("Usage: "^ Sys.argv.(0) ^" [options] database.toml")
+
+(*
+let db =
+  { db_name = "actu_6";
+    db_alias = "Test";
+    db_fields = [ 
+      { f_name="album"; f_alias="Album Name"; f_select=false; f_type=VarChar; f_display=true };
+      { f_name="band"; f_alias="Band name"; f_select=false; f_type=VarChar; f_display=true };
+      { f_name="date"; f_alias="Date"; f_select=false; f_type=Date; f_display=false };
+      { f_name="tags"; f_alias="Tags"; f_select=false; f_type=Set ["Live"]; f_display=false };
+      { f_name="content"; f_alias="Content"; f_select=false; f_type=Text; f_display=false } ];
+    db_autogen_fields = [
+      { a_name="url"; a_alias="Url"; a_select=true; a_display=false; a_gen_fun_name="genUrl"; a_gen_fun_params=["artist";"album"]};
+    ]
+  }
+*)
+  let db =
+  { db_name = "actu_6";
+    db_alias = "Actu";
+    db_fields = [ 
+      { f_name="title"; f_alias="Titre"; f_select=false; f_type=VarChar; f_display=true };
+      { f_name="date"; f_alias="Date"; f_select=false; f_type=Date; f_display=true };
+      { f_name="content"; f_alias="Content"; f_select=false; f_type=Text; f_display=false } ];
+    db_autogen_fields = [] 
+  }
+
+let _ =
+  Model.print !out_dir db;
+  Create.print !out_dir db;
+  Request.print !out_dir db;
+  Update.print !out_dir db;
+  Delete.print !out_dir db
+

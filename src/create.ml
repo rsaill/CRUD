@@ -2,12 +2,11 @@ open Types
 
 let print_create_php_code (out:out_channel) (db:t_db) : unit =
   let model_name = "Model" ^ (String.capitalize_ascii db.db_name) in
-  let pp_isset_post_var out fd = Printf.fprintf out "$_POST['%s']" fd.f_name in
-  let pp_post_var out fd = Printf.fprintf out "isset($_POST['%s'])" fd.f_name in
+  let pp_post_var out fd = Printf.fprintf out "$_POST['%s']" fd.f_name in
+  let pp_isset_post_var out fd = Printf.fprintf out "isset($_POST['%s'])" fd.f_name in
   Printf.fprintf out "<?php
 include('auth.php');
 include('db.php');
-include('autogen.php');
 include('%s.class.php');
 
 $model = new %s($db);
@@ -37,7 +36,7 @@ let print dir db =
         <?php
                 if(isset($msg)){ echo $msg; }
         ?>
-        <form class=\"pure-form pure-form-stacked\">
+        <form action=\"\" method=\"post\" class=\"pure-form pure-form-stacked\">
             <fieldset>
                 <legend>%s Creation</legend>" db.db_alias db.db_alias;
   List.iter (fun fd ->
@@ -45,22 +44,22 @@ let print dir db =
         | VarChar ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <input id=\"%s\" type=\"text\" placeholder=\"%s\" required>"
+            <input name=\"%s\" type=\"text\" placeholder=\"%s\" required>"
             fd.f_name fd.f_alias fd.f_name fd.f_alias
         | Date ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <input id=\"%s\" type=\"date\" required>"
+            <input name=\"%s\" type=\"date\" required>"
             fd.f_name fd.f_alias fd.f_name
         | Text ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <textarea id=\"%s\" required>%s</textarea>"
+            <textarea name=\"%s\" required>%s</textarea>"
             fd.f_name fd.f_alias fd.f_name fd.f_alias
         | Set elts ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <select id=\"%s\" multiple required>" fd.f_name fd.f_alias fd.f_name;
+            <select name=\"%s\" multiple required>" fd.f_name fd.f_alias fd.f_name;
           List.iter (fun x ->
               Printf.fprintf out "
                 <option>%s</option>" x
@@ -69,7 +68,7 @@ let print dir db =
             </select>"
     ) db.db_fields;
   Printf.fprintf out "
-                <button type=\"submit\" class=\"pure-button pure-button-primary\">Create</button>
+               <button type=\"submit\" class=\"pure-button pure-button-primary\">Create</button>
             </fieldset>
         </form>
         </main>
