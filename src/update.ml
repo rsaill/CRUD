@@ -2,8 +2,8 @@ open Types
 
 let print_update_php_code out db =
   let model_name = "Model" ^ (String.capitalize_ascii db.db_name) in
-  let pp_isset_post_var out fd = Printf.fprintf out "$_POST['%s']" fd.f_name in
-  let pp_post_var out fd = Printf.fprintf out "isset($_POST['%s'])" fd.f_name in
+  let pp_post_var out fd = Printf.fprintf out "$_POST['%s']" fd.f_name in
+  let pp_isset_post_var out fd = Printf.fprintf out "isset($_POST['%s'])" fd.f_name in
   let pp_error out fd : unit = Printf.fprintf out "'%s' => 'Error'" fd.f_name in
   Printf.fprintf out "<?php
 include('db.php');
@@ -51,32 +51,32 @@ let print dir db =
                 if(isset($msg)){ echo $msg; }
         ?>
 
-        <form class=\"pure-form pure-form-stacked\">
+        <form class=\"pure-form pure-form-stacked\" action=\"\" method=\"post\">
             <fieldset>
                 <legend>%s Update</legend>
-                <input id=\"id\" type=\"hidden\" placeholder=\"<?php=$arr['id'];?>\">"
+                <input name=\"id\" type=\"hidden\" value=\"<?php echo $arr['id'];?>\">"
     db.db_alias db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <input id=\"%s\" type=\"text\" placeholder=\"<?php=$arr['%s'];?>\" required>"
+            <input name=\"%s\" type=\"text\" value=\"<?php echo $arr['%s'];?>\" required>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Date ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <input id=\"%s\" type=\"date\" placeholder=\"<?php=$arr['%s'];?>\" required>"
+            <input name=\"%s\" type=\"date\" value=\"<?php echo $arr['%s'];?>\" required>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Text ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <textarea id=\"%s\" required><?php=$arr['%s'];?></textarea>"
-            fd.f_name fd.f_alias fd.f_name fd.f_alias
+            <textarea name=\"%s\" required><?php echo $arr['%s'];?></textarea>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
         | Set elts ->
           Printf.fprintf out "
             <label for=\"%s\">%s</label>
-            <select id=\"%s\" multiple>
+            <select name=\"%s\" multiple>
             <?php
                 $tags = explode(\",\",$arr['%s']);"
             fd.f_name fd.f_alias fd.f_name fd.f_name;

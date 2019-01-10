@@ -34,7 +34,7 @@ let print_update_fn out db : unit =
                 $sql = 'UPDATE `%s` SET %s WHERE `id` = ?';
                 $stmt = $this->db->prepare($sql);" params db.db_name field_eq_qmark;
   Printf.fprintf out "
-                return $stmt->execute(array(%s,id));
+                return $stmt->execute(array(%s,$id));
         }\n" vars
 
 let print_select_fns out db : unit =
