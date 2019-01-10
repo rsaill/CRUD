@@ -33,8 +33,6 @@ url.generator_parameters=["album","band"]
 url.display=false
 
 [actu_6]
-
-database="actu_6"
 alias = "Actu"
 
 title.alias="Titre"
