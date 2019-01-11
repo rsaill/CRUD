@@ -1,126 +1,147 @@
 [actu_6]
 alias = "Actu"
 
-title.alias="Titre"
-title.select=false
-title.type="VarChar"
-title.display=true
+[actu_6.title]
+alias = "Titre"
+select=false
+type="VarChar"
+display=true
 
-date.alias="Date"
-date.select=false
-date.type="Date"
-date.display=true
+[actu_6.date]
+alias="Date"
+select=false
+type="Date"
+display=true
 
-content.alias="Contenu"
-content.select=false
-content.type="Text"
-content.display=false
+[actu_6.content]
+alias="Contenu"
+select=false
+type="Text"
+display=false
 
 [edito_6]
 
 alias = "Edito"
 
-title.alias="Titre"
-title.select=false
-title.type="VarChar"
-title.display=true
+[edito_6.title]
+alias="Titre"
+select=false
+type="VarChar"
+display=true
 
-content.alias="Edito"
-content.select=false
-content.type="Text"
-content.display=false
+[edito_6.content]
+alias="Edito"
+select=false
+type="Text"
+display=false
 
 [album_6]
 alias = "Album"
 
-album_name.alias="Titre"
-album_name.select=false
-album_name.type="VarChar"
-album_name.display=true
+[album_6.album_name]
+alias="Titre"
+select=false
+type="VarChar"
+display=true
 
-image.alias="Image"
-image.select=false
-image.type="VarChar"
-image.display=false
+[album_6.image]
+alias="Image"
+select=false
+type="VarChar"
+display=false
 
-artist.alias="Artiste"
-artist.select=false
-artist.type="VarChar"
-artist.display=true
+[album_6.artist]
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
 
-url.alias="Url"
-url.select=true
-url.type="VarChar"
-url.display=false
-url.generator_name="genUrl"
-url.generator_parameters=["artist","album_name"]
+[album_6.url]
+alias="Url"
+select=true
+type="VarChar"
+display=false
+generator_name="genUrl"
+generator_parameters=["artist","album_name"]
 
-content.alias="Chronique"
-content.select=false
-content.type="Text"
-content.display=false
+[album_6.content]
+alias="Chronique"
+select=false
+type="Text"
+display=false
 
 [concert_6]
 alias = "Concert"
 
-url.alias="Url"
-url.select=true
-url.type="VarChar"
-url.display=false
-url.generator_name="genUrl"
-url.generator_parameters=["artist","place"]
+[concert_6.url]
+alias="Url"
+select=true
+type="VarChar"
+display=false
+generator_name="genUrl"
+generator_parameters=["artist","place"]
 
-image.alias="Image"
-image.select=false
-image.type="VarChar"
-image.display=false
+[concert_6.image]
+alias="Image"
+select=false
+type="VarChar"
+display=false
 
-date.alias="Date"
-date.select=false
-date.type="Date"
-date.display=true
+[concert_6.date]
+alias="Date"
+select=false
+type="Date"
+display=true
 
-place.alias="Lieu"
-place.select=false
-place.type="VarChar"
-place.display=true
+[concert_6.place]
+alias="Lieu"
+select=false
+type="VarChar"
+display=true
 
-artist.alias="Artiste"
-artist.select=false
-artist.type="VarChar"
-artist.display=true
+[concert_6.artist]
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
 
-content.alias="Chronique"
-content.select=false
-content.type="Text"
-content.display=false
+[concert_6.content]
+alias="Chronique"
+select=false
+type="Text"
+display=false
 
 [interview_6]
 alias = "Interview"
 
-date.alias="Date"
-date.select=false
-date.type="Date"
-date.display=true
+[interview_6.date]
+alias="Date"
+select=false
+type="Date"
+display=true
 
-image.alias="Image"
-image.select=false
-image.type="VarChar"
-image.display=false
+[interview_6.image]
+alias="Image"
+select=false
+type="VarChar"
+display=false
 
-artist.alias="Artiste"
-artist.select=false
-artist.type="VarChar"
-artist.display=true
+[interview_6.artist]
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
 
-url.alias="Url"
-url.select=true
-url.type="VarChar"
-url.display=false
-url.generator_name="genUrl"
-url.generator_parameters=["artist","album_name"]
+[interview_6.url]
+alias="Url"
+select=true
+type="VarChar"
+display=false
+generator_name="genUrl"
+generator_parameters=["artist","album_name"]
 
-content.alias="Contenu"
-content.select=false
-content.type="Text"
-content.display=false
+[interview_6.content]
+alias="Contenu"
+select=false
+type="Text"
+display=false

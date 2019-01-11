@@ -21,7 +21,7 @@ if(%a){
     (pp_list pp_isset_post_var " && ") db.db_fields
     (pp_list pp_post_var ", ") db.db_fields
 
-let print dir db =
+let print dir menu db =
   let out = open_out (dir ^ "/create_" ^ db.db_name ^ ".php") in
   print_create_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
@@ -30,15 +30,19 @@ let print dir db =
         <meta charset=\"utf-8\">
         <title>%s Creation</title>
         <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
+        <link rel=\"stylesheet\" href=\"admin.css\" media=\"screen\">
     </head>
     <body>
-        <main style=\"width:600px;margin:auto\">
+        %s
+        <div id=\"main\">
+        
+        <section style=\"width:600px;margin:auto\">
         <?php
                 if(isset($msg)){ echo $msg; }
         ?>
         <form action=\"\" method=\"post\" class=\"pure-form pure-form-stacked\">
             <fieldset>
-                <legend>%s Creation</legend>" db.db_alias db.db_alias;
+                <legend>%s Creation</legend>" db.db_alias menu db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
@@ -71,6 +75,7 @@ let print dir db =
                <button type=\"submit\" class=\"pure-button pure-button-primary\">Create</button>
             </fieldset>
         </form>
-        </main>
+        </section>
+        </div>
     </body>
 </html>"

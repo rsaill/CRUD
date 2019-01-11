@@ -6,7 +6,7 @@ let print_create_fn out db : unit =
   let params = String.concat "," (List.map (fun f -> "$"^f.f_name) db.db_fields) in
   let field_name_list =
     (List.map (fun f -> f.f_name) db.db_fields)
-    @(List.map (fun f -> f.a_name) db.db_autogen_fields)
+    @(List.map (fun (f,_,_) -> f.f_name) db.db_autogen_fields)
   in
   let field_names = String.concat "," field_name_list in
   let qmarks = String.concat "," (List.map (fun _ -> "?") field_name_list) in
@@ -16,10 +16,9 @@ let print_create_fn out db : unit =
                 $sql = 'INSERT INTO `%s` (%s) VALUES (%s)';
                 $stmt = $this->db->prepare($sql);"
     params db.db_name field_names qmarks;
-  List.iter (fun f ->
-      let lst = List.map (fun s -> "$" ^ s) f.a_gen_fun_params in
+  List.iter (fun (f,gen_name,gen_params) ->
       Printf.fprintf out "
-                $%s = %s(%a);" f.a_name f.a_gen_fun_name (pp_list pp_string ",") lst
+                $%s = %s(%a);" f.f_name gen_name (pp_list pp_string ",") gen_params
     ) db.db_autogen_fields;
   Printf.fprintf out "
                 return $stmt->execute(array(%s));
