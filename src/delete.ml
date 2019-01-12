@@ -30,7 +30,7 @@ if(isset($_GET['id']) || isset($_POST['id'])){
 }
 ?>" model_name model_name (pp_list pp_error ", ") db.db_fields
 
-let print dir db =
+let print dir menu db =
   let out = open_out (dir ^ "/delete_" ^ db.db_name ^ ".php") in
   print_delete_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
@@ -38,40 +38,46 @@ let print dir db =
     <head>
         <meta charset=\"utf-8\">
         <title>%s Deletion</title>
-        <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
+        <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">
     </head>
     <body>
-        <main style=\"width:600px;margin:auto\">
+        %s
+        <div class=\"w3-cell\" style=\"width:600px;padding-left:20px;\">
+        <h2>%s Deletion</h2>
         <?php
                 if(isset($msg)){ echo $msg; }
         ?>
-
-        <form action=\"\" method=\"post\" class=\"pure-form pure-form-stacked\">
-            <fieldset>
-                <legend>%s Deletion</legend>
+        <form action=\"\" method=\"post\">
                 <input name=\"id\" type=\"hidden\" value=\"<?php echo $arr['id'];?>\">"
-    db.db_alias db.db_alias;
+    db.db_alias menu db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"text\" value=\"<?php echo $arr['%s'];?>\" disabled>"
+            <input name=\"%s\" type=\"text\" class=\"w3-input w3-border\" value=\"<?php echo $arr['%s'];?>\" disabled>
+            </p>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Date ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"date\" value=\"<?php echo $arr['%s'];?>\" disabled>"
+            <input name=\"%s\" type=\"date\" class=\"w3-input w3-border\" value=\"<?php echo $arr['%s'];?>\" disabled>
+            </p>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Text ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <textarea name=\"%s\" disabled><?php echo $arr['%s'];?></textarea>"
+            <textarea name=\"%s\" class=\"w3-input w3-border\" disabled><?php echo $arr['%s'];?></textarea>
+            </p>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Set elts ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <select name=\"%s\" multiple disabled>
+            <select name=\"%s\" class=\"w3-input w3-border\" multiple disabled>
             <?php
                 $tags = explode(\",\",$arr['%s']);"
             fd.f_name fd.f_alias fd.f_name fd.f_name;
@@ -83,12 +89,12 @@ let print dir db =
             ) elts;
           Printf.fprintf out "
             ?>
-            </select>"
+            </select>
+            </p>"
     ) db.db_fields;
   Printf.fprintf out "
-                <button type=\"submit\" class=\"pure-button pure-button-primary\">Delete</button>
-            </fieldset>
+                <button type=\"submit\" class=\"w3-btn w3-blue\">Delete</button>
         </form>
-        </main>
+        </div>
     </body>
 </html>"

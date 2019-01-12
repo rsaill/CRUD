@@ -21,61 +21,87 @@ if(%a){
     (pp_list pp_isset_post_var " && ") db.db_fields
     (pp_list pp_post_var ", ") db.db_fields
 
-let print dir menu db =
+let print dir menu db = (*FIXME markdown*)
   let out = open_out (dir ^ "/create_" ^ db.db_name ^ ".php") in
+  let text_list =
+    List.filter (fun f -> match f.f_type with Text -> true | _ -> false)
+      db.db_fields
+  in
   print_create_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
 <html lang=\"fr\">
     <head>
         <meta charset=\"utf-8\">
         <title>%s Creation</title>
-        <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
-        <link rel=\"stylesheet\" href=\"admin.css\" media=\"screen\">
+        <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">
+" db.db_alias;
+ (match text_list with
+    | [] -> ()
+    | _::_ ->
+      Printf.fprintf out "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css\">
+        <script src=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js\"></script>"
+ );
+Printf.fprintf out "
     </head>
     <body>
         %s
-        <div id=\"main\">
-        
-        <section style=\"width:600px;margin:auto\">
+        <div class=\"w3-cell\" style=\"width:600px;padding-left:20px;\">
+        <h2>%s Creation</h2>
         <?php
                 if(isset($msg)){ echo $msg; }
         ?>
-        <form action=\"\" method=\"post\" class=\"pure-form pure-form-stacked\">
-            <fieldset>
-                <legend>%s Creation</legend>" db.db_alias menu db.db_alias;
+        <form action=\"\" method=\"post\">" menu db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"text\" placeholder=\"%s\" required>"
-            fd.f_name fd.f_alias fd.f_name fd.f_alias
+            <input name=\"%s\" type=\"text\" class=\"w3-input w3-border\" required>
+            </p>"
+            fd.f_name fd.f_alias fd.f_name
         | Date ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"date\" required>"
+            <input name=\"%s\" type=\"date\" class=\"w3-input w3-border\" required>
+            </p>"
             fd.f_name fd.f_alias fd.f_name
         | Text ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <textarea name=\"%s\" required>%s</textarea>"
-            fd.f_name fd.f_alias fd.f_name fd.f_alias
+            <textarea id=\"%s\" name=\"%s\" class=\"w3-input w3-border\" required></textarea>
+            </p>"
+            fd.f_name fd.f_alias fd.f_name fd.f_name
         | Set elts ->
           Printf.fprintf out "
+            <p>
             <label for=\"%s\">%s</label>
-            <select name=\"%s\" multiple required>" fd.f_name fd.f_alias fd.f_name;
+            <select name=\"%s\" class=\"w3-input w3-border\" multiple required>" fd.f_name fd.f_alias fd.f_name;
           List.iter (fun x ->
               Printf.fprintf out "
                 <option>%s</option>" x
             ) elts;
           Printf.fprintf out "
-            </select>"
+            </select>
+            </p>"
     ) db.db_fields;
   Printf.fprintf out "
-               <button type=\"submit\" class=\"pure-button pure-button-primary\">Create</button>
-            </fieldset>
+               <button type=\"submit\" class=\"w3-btn w3-blue\">Create</button>
         </form>
-        </section>
-        </div>
+        </div>";
+  ( match text_list with
+    | [] -> ()
+    | _::_ ->
+      Printf.fprintf out "
+<script>";
+      List.iter (fun f ->
+          Printf.fprintf out "
+var simplemde = new SimpleMDE({ element: document.getElementById(\"%s\") });" f.f_name
+        ) text_list;
+      Printf.fprintf out "
+</script>");
+  Printf.fprintf out "
     </body>
 </html>"

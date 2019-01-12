@@ -1,19 +1,22 @@
 [actu_6]
 alias = "Actu"
 
-[actu_6.title]
+[[actu_6.fields]]
+name = "title"
 alias = "Titre"
 select=false
 type="VarChar"
 display=true
 
-[actu_6.date]
+[[actu_6.fields]]
+name = "date"
 alias="Date"
 select=false
 type="Date"
 display=true
 
-[actu_6.content]
+[[actu_6.fields]]
+name = "content"
 alias="Contenu"
 select=false
 type="Text"
@@ -23,13 +26,15 @@ display=false
 
 alias = "Edito"
 
-[edito_6.title]
+[[edito_6.fields]]
+name="title"
 alias="Titre"
 select=false
 type="VarChar"
 display=true
 
-[edito_6.content]
+[[edito_6.fields]]
+name="content"
 alias="Edito"
 select=false
 type="Text"
@@ -38,25 +43,29 @@ display=false
 [album_6]
 alias = "Album"
 
-[album_6.album_name]
+[[album_6.fields]]
+name="album_name"
 alias="Titre"
 select=false
 type="VarChar"
 display=true
 
-[album_6.image]
+[[album_6.fields]]
+name="image"
 alias="Image"
 select=false
 type="VarChar"
 display=false
 
-[album_6.artist]
+[[album_6.fields]]
+name="artist"
 alias="Artiste"
 select=false
 type="VarChar"
 display=true
 
-[album_6.url]
+[[album_6.fields]]
+name="url"
 alias="Url"
 select=true
 type="VarChar"
@@ -64,7 +73,8 @@ display=false
 generator_name="genUrl"
 generator_parameters=["artist","album_name"]
 
-[album_6.content]
+[[album_6.fields]]
+name="content"
 alias="Chronique"
 select=false
 type="Text"
@@ -73,7 +83,8 @@ display=false
 [concert_6]
 alias = "Concert"
 
-[concert_6.url]
+[[concert_6.fields]]
+name="url"
 alias="Url"
 select=true
 type="VarChar"
@@ -81,31 +92,36 @@ display=false
 generator_name="genUrl"
 generator_parameters=["artist","place"]
 
-[concert_6.image]
+[[concert_6.fields]]
+name="image"
 alias="Image"
 select=false
 type="VarChar"
 display=false
 
-[concert_6.date]
+[[concert_6.fields]]
+name="date"
 alias="Date"
 select=false
 type="Date"
 display=true
 
-[concert_6.place]
+[[concert_6.fields]]
+name="place"
 alias="Lieu"
 select=false
 type="VarChar"
 display=true
 
-[concert_6.artist]
+[[concert_6.fields]]
+name="artist"
 alias="Artiste"
 select=false
 type="VarChar"
 display=true
 
-[concert_6.content]
+[[concert_6.fields]]
+name="content"
 alias="Chronique"
 select=false
 type="Text"
@@ -114,25 +130,29 @@ display=false
 [interview_6]
 alias = "Interview"
 
-[interview_6.date]
+[[interview_6.fields]]
+name="date"
 alias="Date"
 select=false
 type="Date"
 display=true
 
-[interview_6.image]
+[[interview_6.fields]]
+name="image"
 alias="Image"
 select=false
 type="VarChar"
 display=false
 
-[interview_6.artist]
+[[interview_6.fields]]
+name="artist"
 alias="Artiste"
 select=false
 type="VarChar"
 display=true
 
-[interview_6.url]
+[[interview_6.fields]]
+name="url"
 alias="Url"
 select=true
 type="VarChar"
@@ -140,7 +160,8 @@ display=false
 generator_name="genUrl"
 generator_parameters=["artist","album_name"]
 
-[interview_6.content]
+[[interview_6.fields]]
+name="content"
 alias="Contenu"
 select=false
 type="Text"

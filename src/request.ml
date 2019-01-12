@@ -12,7 +12,7 @@ $offset = isset($_GET['offset'])? $_GET['offset'] : 0;
 $result = $model->enumerate($offset);
 ?>" model_name model_name
 
-let print dir db : unit =
+let print dir menu db : unit =
   let out = open_out (dir ^ "/list_" ^ db.db_name ^ ".php") in
   print_list_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
@@ -20,15 +20,17 @@ let print dir db : unit =
     <head>
         <meta charset=\"utf-8\">
         <title>%s Management</title>
-        <link rel=\"stylesheet\" href=\"pure/pure-min.css\" media=\"screen\">
+        <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">
     </head>
     <body>
-        <main style=\"width:600px;margin:auto\">
+        %s
+        <div class=\"w3-cell\" style=\"width:600px;padding-left:20px;\">
+        <h2>List</h2>
     <a href=\"create_%s.php\">Create a new entry</a>
-        <table class=\"pure-table-striped\">
+        <table class=\"w3-table\">
             <thead>
                 <tr>
-                    <th>Id</th>" db.db_alias db.db_name;
+                    <th>Id</th>" db.db_alias menu db.db_name;
   List.iter (fun fd ->
       if fd.f_display then Printf.fprintf out "
                     <th>%s</th>" fd.f_alias
@@ -61,6 +63,6 @@ echo '<td><a href=\"delete_%s.php?id=',$line['id'],'\">Delete</a></td>';"
     <a href=\"list_%s.php?p=<? echo min($offset-20,0); ?>\">Next</a>
     -
     <a href=\"list_%s.php?p=<? echo ($offset+20); ?>\">Previous</a>
-        </main>
+        </div>
     </body>
 </html>" db.db_name db.db_name
