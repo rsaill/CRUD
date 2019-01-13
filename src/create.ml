@@ -12,16 +12,16 @@ include('%s.class.php');
 $model = new %s($db);
 if(%a){
     if($model->create(%a)){
-        $msg = '<div>Success</div>';
+        $msg = '<div class=\"w3-panel w3-green\">Success</div>';
     } else {
-        $msg = '<div>Failure</div>';
+        $msg = '<div class=\"w3-panel w3-red\">Failure</div>';
     }
 }
 ?>" model_name model_name
     (pp_list pp_isset_post_var " && ") db.db_fields
     (pp_list pp_post_var ", ") db.db_fields
 
-let print dir menu db = (*FIXME markdown*)
+let print dir menu db =
   let out = open_out (dir ^ "/create_" ^ db.db_name ^ ".php") in
   let text_list =
     List.filter (fun f -> match f.f_type with Text -> true | _ -> false)

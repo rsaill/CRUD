@@ -12,9 +12,9 @@ $model = new %s($db);
 
 if(isset($_POST['id'])){
     if($model->delete($_POST['id'])){
-        $msg = '<div>Success</div>';
+        $msg = '<div class=\"w3-panel w3-green\">Success</div>';
     } else {
-        $msg = '<div>Failure</div>';
+        $msg = '<div class=\"w3-panel w3-red\">Failure</div>';
     }
 }
 

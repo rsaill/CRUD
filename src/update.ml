@@ -13,11 +13,10 @@ include('%s.class.php');
 $model = new %s($db);
 if(isset($_POST['id']) && %a){
     if($model->update($_POST['id'],%a)){
-        $msg = '<div>Success</div>';
+        $msg = '<div class=\"w3-panel w3-green\">Success</div>';
     } else {
-        $msg = '<div>Failure</div>';
+        $msg = '<div class=\"w3-panel w3-red\">Failure</div>';
     }
-
 }
 
 $error_arr = array('id'=>'-1',%a);
@@ -37,6 +36,10 @@ if(isset($_GET['id']) || isset($_POST['id'])){
 
 let print dir menu db =
   let out = open_out (dir ^ "/update_" ^ db.db_name ^ ".php") in
+  let text_list =
+    List.filter (fun f -> match f.f_type with Text -> true | _ -> false)
+      db.db_fields
+  in
   print_update_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
 <html lang=\"fr\">
@@ -44,6 +47,14 @@ let print dir menu db =
         <meta charset=\"utf-8\">
         <title>%s Update</title>
         <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">
+    " db.db_alias;
+    (match text_list with
+     | [] -> ()
+     | _::_ ->
+       Printf.fprintf out "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css\">
+        <script src=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js\"></script>"
+    );
+  Printf.fprintf out "
     </head>
     <body>
         %s
@@ -54,7 +65,7 @@ let print dir menu db =
         ?>
         <form action=\"\" method=\"post\">
                 <input name=\"id\" type=\"hidden\" value=\"<?php echo $arr['id'];?>\">"
-    db.db_alias menu db.db_alias;
+    menu db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
@@ -75,9 +86,9 @@ let print dir menu db =
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <textarea name=\"%s\" class=\"w3-input w3-border\" required><?php echo $arr['%s'];?></textarea>
+            <textarea id=\"%s\" name=\"%s\" class=\"w3-input w3-border\" required><?php echo $arr['%s'];?></textarea>
             </p>"
-            fd.f_name fd.f_alias fd.f_name fd.f_name
+            fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name
         | Set elts ->
           Printf.fprintf out "
             <p>
@@ -100,6 +111,18 @@ let print dir menu db =
   Printf.fprintf out "
                 <button type=\"submit\" class=\"w3-btn w3-blue\">Update</button>
         </form>
-        </div>
+        </div>";
+  ( match text_list with
+    | [] -> ()
+    | _::_ ->
+      Printf.fprintf out "
+<script>";
+      List.iter (fun f ->
+          Printf.fprintf out "
+var simplemde = new SimpleMDE({ element: document.getElementById(\"%s\") });" f.f_name
+        ) text_list;
+      Printf.fprintf out "
+</script>");
+  Printf.fprintf out "
     </body>
 </html>"

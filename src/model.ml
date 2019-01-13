@@ -90,9 +90,8 @@ let print_search_fn out db : unit =
 
 let print_list_fn out db : unit =
   Printf.fprintf out "
-        public function enumerate($offset){
-                $offset = max(0,$offset);
-                $sql = 'SELECT * FROM `%s` ORDER BY `id` DESC LIMIT 20 OFFSET '.$offset;
+        public function get_all(){
+                $sql = 'SELECT * FROM `%s` ORDER BY `id` DESC';
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute();
                 return $stmt->fetchAll();
