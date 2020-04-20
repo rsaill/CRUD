@@ -9,13 +9,13 @@ type t_field =
     f_alias: string;
     f_type: t_field_type;
     f_select: bool;
+    f_search: bool;
     f_display: bool }
 
 type t_db =
   { db_name:string;
     db_alias:string;
-    db_fields: t_field list;
-    db_autogen_fields: (t_field*string*string list) list }
+    db_fields: t_field list }
 
 let rec pp_list pp sep out = function
   | [] -> ()

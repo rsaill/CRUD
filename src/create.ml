@@ -5,7 +5,6 @@ let print_create_php_code (out:out_channel) (db:t_db) : unit =
   let pp_post_var out fd = Printf.fprintf out "$_POST['%s']" fd.f_name in
   let pp_isset_post_var out fd = Printf.fprintf out "isset($_POST['%s'])" fd.f_name in
   Printf.fprintf out "<?php
-include('auth.php');
 include('db.php');
 include('%s.class.php');
 
@@ -21,8 +20,8 @@ if(%a){
     (pp_list pp_isset_post_var " && ") db.db_fields
     (pp_list pp_post_var ", ") db.db_fields
 
-let print dir menu db =
-  let out = open_out (dir ^ "/create_" ^ db.db_name ^ ".php") in
+let print out_dir db =
+  let out = open_out (out_dir ^ "/create_" ^ db.db_name ^ ".php") in
   let text_list =
     List.filter (fun f -> match f.f_type with Text -> true | _ -> false)
       db.db_fields
@@ -44,13 +43,13 @@ let print dir menu db =
 Printf.fprintf out "
     </head>
     <body>
-        %s
+        <?php include('menu.html'); ?>
         <div class=\"w3-cell\" style=\"width:600px;padding-left:20px;\">
         <h2>%s Creation</h2>
         <?php
                 if(isset($msg)){ echo $msg; }
         ?>
-        <form action=\"\" method=\"post\">" menu db.db_alias;
+        <form action=\"\" method=\"post\">" db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
@@ -71,7 +70,7 @@ Printf.fprintf out "
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <textarea id=\"%s\" name=\"%s\" class=\"w3-input w3-border\" required></textarea>
+            <textarea id=\"%s\" name=\"%s\" class=\"w3-input w3-border\"></textarea>
             </p>"
             fd.f_name fd.f_alias fd.f_name fd.f_name
         | Set elts ->

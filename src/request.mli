@@ -1,1 +1,1 @@
-val print : string -> string -> Types.t_db -> unit
+val print : string -> Types.t_db -> unit

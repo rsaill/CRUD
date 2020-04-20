@@ -22,24 +22,6 @@ select=false
 type="Text"
 display=false
 
-[edito_6]
-
-alias = "Edito"
-
-[[edito_6.fields]]
-name="title"
-alias="Titre"
-select=false
-type="VarChar"
-display=true
-
-[[edito_6.fields]]
-name="content"
-alias="Edito"
-select=false
-type="Text"
-display=false
-
 [album_6]
 alias = "Album"
 
@@ -49,6 +31,15 @@ alias="Titre"
 select=false
 type="VarChar"
 display=true
+search=true
+
+[[album_6.fields]]
+name="artist"
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
+search=true
 
 [[album_6.fields]]
 name="image"
@@ -58,20 +49,11 @@ type="VarChar"
 display=false
 
 [[album_6.fields]]
-name="artist"
-alias="Artiste"
-select=false
-type="VarChar"
-display=true
-
-[[album_6.fields]]
 name="url"
 alias="Url"
 select=true
 type="VarChar"
 display=false
-generator_name="genUrl"
-generator_parameters=["artist","album_name"]
 
 [[album_6.fields]]
 name="content"
@@ -84,20 +66,20 @@ display=false
 alias = "Concert"
 
 [[concert_6.fields]]
-name="url"
-alias="Url"
-select=true
-type="VarChar"
-display=false
-generator_name="genUrl"
-generator_parameters=["artist","place"]
-
-[[concert_6.fields]]
-name="image"
-alias="Image"
+name="artist"
+alias="Artiste"
 select=false
 type="VarChar"
-display=false
+display=true
+search=true
+
+[[concert_6.fields]]
+name="place"
+alias="Lieu"
+select=false
+type="VarChar"
+display=true
+search=true
 
 [[concert_6.fields]]
 name="date"
@@ -107,18 +89,18 @@ type="Date"
 display=true
 
 [[concert_6.fields]]
-name="place"
-alias="Lieu"
+name="image"
+alias="Image"
 select=false
 type="VarChar"
-display=true
+display=false
 
 [[concert_6.fields]]
-name="artist"
-alias="Artiste"
-select=false
+name="url"
+alias="Url"
+select=true
 type="VarChar"
-display=true
+display=false
 
 [[concert_6.fields]]
 name="content"
@@ -131,6 +113,14 @@ display=false
 alias = "Interview"
 
 [[interview_6.fields]]
+name="artist"
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
+search=true
+
+[[interview_6.fields]]
 name="date"
 alias="Date"
 select=false
@@ -145,24 +135,95 @@ type="VarChar"
 display=false
 
 [[interview_6.fields]]
-name="artist"
-alias="Artiste"
-select=false
-type="VarChar"
-display=true
-
-[[interview_6.fields]]
 name="url"
 alias="Url"
 select=true
 type="VarChar"
 display=false
-generator_name="genUrl"
-generator_parameters=["artist","album_name"]
 
 [[interview_6.fields]]
 name="content"
 alias="Contenu"
+select=false
+type="Text"
+display=false
+
+[dvd_6]
+alias = "Dvd"
+
+[[dvd_6.fields]]
+name="name"
+alias="Titre"
+select=false
+type="VarChar"
+display=true
+search=true
+
+[[dvd_6.fields]]
+name="artist"
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
+search=true
+
+[[dvd_6.fields]]
+name="image"
+alias="Image"
+select=false
+type="VarChar"
+display=false
+
+[[dvd_6.fields]]
+name="url"
+alias="Url"
+select=true
+type="VarChar"
+display=false
+
+[[dvd_6.fields]]
+name="content"
+alias="Chronique"
+select=false
+type="Text"
+display=false
+
+[livre_6]
+alias = "Dvd"
+
+[[livre_6.fields]]
+name="name"
+alias="Titre"
+select=false
+type="VarChar"
+display=true
+search=true
+
+[[livre_6.fields]]
+name="artist"
+alias="Artiste"
+select=false
+type="VarChar"
+display=true
+search=true
+
+[[livre_6.fields]]
+name="image"
+alias="Image"
+select=false
+type="VarChar"
+display=false
+
+[[livre_6.fields]]
+name="url"
+alias="Url"
+select=true
+type="VarChar"
+display=false
+
+[[livre_6.fields]]
+name="content"
+alias="Chronique"
 select=false
 type="Text"
 display=false

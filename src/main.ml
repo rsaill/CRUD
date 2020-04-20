@@ -57,11 +57,7 @@ let to_table_array (toml:TomlTypes.value) : (TomlTypes.table list,string) result
   | TArray (NodeInt _) -> Error "expecting array of tables, found array of integers"
   | TArray (NodeString _) -> Error "expecting array of tables, found array of string"
 
-type t_read_field =
-  | F of t_field
-  | A of (t_field*string*string list)
-
-let read_field db_name toml_t : t_read_field =
+let read_field db_name toml_t : t_field =
   let open TomlTypes in
   let f_name = match Table.find_opt (Toml.key "name") toml_t with
     | None -> error ("Error reading name missing for some field of '"^db_name^"'.")
@@ -110,31 +106,15 @@ let read_field db_name toml_t : t_read_field =
         | Error msg -> error ("Error reading option display for field '"^db_name^"."^f_name^"' ("^msg^").")
       end
   in
-  let fgen_name = match Table.find_opt (Toml.key "generator_name") toml_t with
-    | None -> None
+  let f_search = match Table.find_opt (Toml.key "search") toml_t with
+    | None -> false
     | Some v ->
-      begin match to_string v with
-        | Ok fgen_name -> Some fgen_name
-        | Error msg -> error ("Error reading option generator_name for field '"^db_name^"."^f_name^"' ("^msg^").")
+      begin match to_bool v with
+        | Ok display -> display
+        | Error msg -> error ("Error reading option search for field '"^db_name^"."^f_name^"' ("^msg^").")
       end
   in
-  let fgen_params = match Table.find_opt (Toml.key "generator_parameters") toml_t with
-    | None -> None
-    | Some (TArray (TomlTypes.NodeString lst)) -> Some lst
-    | Some _ ->
-      error ("Error reading type for field '"^db_name^"."^f_name^"' (expecting an array of strings).")
-  in
-  let fd = { f_name; f_alias; f_type; f_select; f_display } in
-  match fgen_name, fgen_params with
-  | None, None -> F fd
-  | Some fgen_name, Some fgen_params -> A (fd,fgen_name,fgen_params)
-  | Some fgen_name, None -> A (fd,fgen_name,[])
-  | None, Some fgen_params -> A(fd,"gen" ^ String.capitalize_ascii f_name,fgen_params)
-
-let rec split = function
-  | [] -> ([],[])
-  | (F x)::tl -> let (a,b) = split tl in (x::a,b)
-  | (A x)::tl -> let (a,b) = split tl in (a,x::b)
+  { f_name; f_alias; f_type; f_select; f_display; f_search }
 
 let read_db (db_name:string) (toml_t:TomlTypes.table) : t_db =
   let open TomlTypes in
@@ -148,7 +128,7 @@ let read_db (db_name:string) (toml_t:TomlTypes.table) : t_db =
           error ("Error reading alias for database '"^db_name^"' ("^msg^").")
       end
   in
-  let fields = 
+  let db_fields = 
     match Table.find_opt (Toml.key "fields") toml_t with
     | None -> error ("No fields for database '"^db_name^"'.")
     | Some v ->
@@ -158,8 +138,7 @@ let read_db (db_name:string) (toml_t:TomlTypes.table) : t_db =
         | Ok lst -> List.map (read_field db_name) lst
       end
   in
-  let db_fields, db_autogen_fields = split fields in
-  { db_name; db_alias; db_fields; db_autogen_fields }
+  { db_name; db_alias; db_fields }
 
 let read_db_list (toml_t:TomlTypes.table) : t_db list =
   let open TomlTypes in
@@ -171,32 +150,28 @@ let read_db_list (toml_t:TomlTypes.table) : t_db list =
       | Error msg -> error ("Error reading database '"^db_name^"' ("^msg^").")
   ) toml_t []
 
-let menu (lst:t_db list) : string =
+let print_menu out_dir (lst:t_db list) : unit =
+  let out = open_out (out_dir ^ "/menu.html") in
   let aux_db db = 
-    Printf.sprintf "<a href=\"list_%s.php\" class=\"w3-bar-item w3-button\">%s</a>" db.db_name db.db_alias
+    Printf.fprintf out "<a href=\"list_%s.php\" class=\"w3-bar-item w3-button\">%s</a>" db.db_name db.db_alias
   in
-  let rec aux_list () = function
-    | [] -> ""
-    | [hd] -> aux_db hd
-    | hd::tl -> aux_db hd ^ aux_list () tl
-  in
-  Printf.sprintf
+  Printf.fprintf out
     "<div class=\"w3-bar-block w3-cell w3-border w3-light-grey w3-card-4\">
-        <h3 class=\"w3-bar-item w3-bold\">Databases</h3>
-        %a
-</div>" aux_list (List.rev lst)
+        <h3 class=\"w3-bar-item w3-bold\">Databases</h3>";
+  List.iter aux_db (List.rev lst);
+  Printf.fprintf out "</div>"  
 
 let run_on_file fn =
   match Toml.Parser.from_filename fn with
   | `Ok toml_table ->
     let lst = read_db_list toml_table in
-    let menu = menu lst in
+    print_menu !out_dir lst;
     List.iter (fun db ->
         Model.print !out_dir db;
-        Create.print !out_dir menu db;
-        Request.print !out_dir menu db;
-        Update.print !out_dir menu db;
-        Delete.print !out_dir menu db
+        Create.print !out_dir db;
+        Request.print !out_dir db;
+        Update.print !out_dir db;
+        Delete.print !out_dir db
       ) lst
   | `Error (msg,_) ->
     begin

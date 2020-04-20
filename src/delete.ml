@@ -4,7 +4,6 @@ let print_delete_php_code out db =
   let model_name = "Model" ^ (String.capitalize_ascii db.db_name) in
   let pp_error out fd : unit = Printf.fprintf out "'%s' => 'Error'" fd.f_name in
   Printf.fprintf out "<?php
-include('auth.php');
 include('db.php');
 include('%s.class.php');
 
@@ -30,8 +29,8 @@ if(isset($_GET['id']) || isset($_POST['id'])){
 }
 ?>" model_name model_name (pp_list pp_error ", ") db.db_fields
 
-let print dir menu db =
-  let out = open_out (dir ^ "/delete_" ^ db.db_name ^ ".php") in
+let print out_dir db =
+  let out = open_out (out_dir ^ "/delete_" ^ db.db_name ^ ".php") in
   print_delete_php_code out db;
   Printf.fprintf out "<!DOCTYPE html>
 <html lang=\"fr\">
@@ -41,7 +40,7 @@ let print dir menu db =
         <link rel=\"stylesheet\" href=\"https://www.w3schools.com/w3css/4/w3.css\">
     </head>
     <body>
-        %s
+        <?php include('menu.html'); ?>
         <div class=\"w3-cell\" style=\"width:600px;padding-left:20px;\">
         <h2>%s Deletion</h2>
         <?php
@@ -49,7 +48,7 @@ let print dir menu db =
         ?>
         <form action=\"\" method=\"post\">
                 <input name=\"id\" type=\"hidden\" value=\"<?php echo $arr['id'];?>\">"
-    db.db_alias menu db.db_alias;
+    db.db_alias db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->

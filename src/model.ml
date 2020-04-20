@@ -4,10 +4,7 @@ let pp_string out s = Printf.fprintf out "%s" s
 
 let print_create_fn out db : unit =
   let params = String.concat "," (List.map (fun f -> "$"^f.f_name) db.db_fields) in
-  let field_name_list =
-    (List.map (fun f -> f.f_name) db.db_fields)
-    @(List.map (fun (f,_,_) -> f.f_name) db.db_autogen_fields)
-  in
+  let field_name_list = List.map (fun f -> f.f_name) db.db_fields in
   let field_names = String.concat "," field_name_list in
   let qmarks = String.concat "," (List.map (fun _ -> "?") field_name_list) in
   let vars = String.concat "," (List.map (fun f -> "$"^f) field_name_list) in
@@ -16,11 +13,7 @@ let print_create_fn out db : unit =
                 $sql = 'INSERT INTO `%s` (%s) VALUES (%s)';
                 $stmt = $this->db->prepare($sql);"
     params db.db_name field_names qmarks;
-  List.iter (fun (f,gen_name,gen_params) ->
-      Printf.fprintf out "
-                $%s = %s(%a);" f.f_name gen_name (pp_list pp_string ",") gen_params
-    ) db.db_autogen_fields;
-  Printf.fprintf out "
+    Printf.fprintf out "
                 return $stmt->execute(array(%s));
         }\n" vars
 
@@ -62,36 +55,42 @@ let print_delete_fn out db_name : unit =
 		return $stmt->execute(array($id));
 	}\n" db_name
 
-let print_search_fn out db : unit =
-  Printf.fprintf out "
-        public function search($criteria,$is_conj){;
-                $kw = $is_conj? ' AND ' : ' OR ';
-                $arr_col = array();
-                $arr_val = array();";
 
-  List.iter (fun f ->
-      let col, vl = match f.f_type with
-        | VarChar | Text -> ("'`"^f.f_name^"` LIKE ?'"), ("'%' . $criteria['"^f.f_name^"'] . '%'")
-        | Date -> ("'`"^f.f_name^"` = ?'"), ("$criteria['"^f.f_name^"']")
-        | Set _ -> ("'FIND_IN_SET(?,"^f.f_name^")'"), ("$criteria['"^f.f_name^"']")
-      in
-      Printf.fprintf out "
-                if(isset($criteria['%s'])){
-                        array_push($arr_col,%s);
-                        array_push($arr_val,%s);
-                }" f.f_name col vl
-    ) db.db_fields;
-  Printf.fprintf out "
-                $sql = 'SELECT * FROM `%s` WHERE ' . join($kw,$arr_col) . ' ORDER BY `id` DESC';
-		$stmt = $this->db->prepare($sql);
-		$stmt->execute(array($arr_val));
+let pp_cond out (f:t_field) : unit =
+  Printf.fprintf out "`%s` LIKE ?" f.f_name
+
+let rec pp_conds out : t_field list -> unit = function
+  | [] -> assert false
+  | [hd] -> pp_cond out hd
+  | hd::tl -> Printf.fprintf out "%a OR %a" pp_cond hd pp_conds tl 
+
+let print_search_fn out db : unit =
+  let sfields = List.filter (fun f -> f.f_search) db.db_fields in
+  match sfields with
+  | [] -> ()
+  | hd::tl ->
+    Printf.fprintf out "
+        public function search($str){
+                $sql = 'SELECT * FROM `%s` WHERE %a ORDER BY `id` DESC';
+                $stmt = $this->db->prepare($sql);
+                $stmt->execute(array($arr_val));
                 return $stmt->fetchAll();
-        }\n" db.db_name
+        }\n" db.db_name pp_conds sfields
 
 let print_list_fn out db : unit =
   Printf.fprintf out "
         public function get_all(){
                 $sql = 'SELECT * FROM `%s` ORDER BY `id` DESC';
+		$stmt = $this->db->prepare($sql);
+		$stmt->execute();
+                return $stmt->fetchAll();
+        }\n" db.db_name
+
+let print_last_fn out db : unit =
+  Printf.fprintf out "
+        public function get_last($n){
+                $n = (int) $n;
+                $sql = 'SELECT * FROM `%s` ORDER BY `id` DESC LIMIT ' . $n;
 		$stmt = $this->db->prepare($sql);
 		$stmt->execute();
                 return $stmt->fetchAll();
@@ -102,10 +101,6 @@ let print dir (db:t_db) : unit =
   let out = open_out (dir ^ "/" ^ model_name ^ ".class.php") in
   Printf.fprintf out "<?php
 ";
-  (if db.db_autogen_fields != [] then
-     Printf.fprintf out "require(\"autogen.php\");
-
-";);
 Printf.fprintf out "class %s {
 	private $db;
 
@@ -119,6 +114,7 @@ Printf.fprintf out "class %s {
   print_delete_fn out db.db_name;
   print_search_fn out db;
   print_list_fn out db;
+  print_last_fn out db;
   Printf.fprintf out "
 }
 ?>"

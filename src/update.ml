@@ -7,7 +7,6 @@ let print_update_php_code out db =
   let pp_error out fd : unit = Printf.fprintf out "'%s' => 'Error'" fd.f_name in
   Printf.fprintf out "<?php
 include('db.php');
-include('auth.php');
 include('%s.class.php');
 
 $model = new %s($db);
@@ -34,8 +33,8 @@ if(isset($_GET['id']) || isset($_POST['id'])){
     (pp_list pp_post_var ", ") db.db_fields
     (pp_list pp_error ", ") db.db_fields
 
-let print dir menu db =
-  let out = open_out (dir ^ "/update_" ^ db.db_name ^ ".php") in
+let print out_dir db =
+  let out = open_out (out_dir ^ "/update_" ^ db.db_name ^ ".php") in
   let text_list =
     List.filter (fun f -> match f.f_type with Text -> true | _ -> false)
       db.db_fields
@@ -57,7 +56,7 @@ let print dir menu db =
   Printf.fprintf out "
     </head>
     <body>
-        %s
+        <?php include('menu.html'); ?>
         <div class=\"w3-cell\" style=\"width:600px;padding-left:20px;\">
         <h2>%s Update</h2>
         <?php
@@ -65,7 +64,7 @@ let print dir menu db =
         ?>
         <form action=\"\" method=\"post\">
                 <input name=\"id\" type=\"hidden\" value=\"<?php echo $arr['id'];?>\">"
-    menu db.db_alias;
+    db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
@@ -86,7 +85,7 @@ let print dir menu db =
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <textarea id=\"%s\" name=\"%s\" class=\"w3-input w3-border\" required><?php echo $arr['%s'];?></textarea>
+            <textarea id=\"%s\" name=\"%s\" class=\"w3-input w3-border\"><?php echo $arr['%s'];?></textarea>
             </p>"
             fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name
         | Set elts ->
