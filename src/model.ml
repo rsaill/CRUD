@@ -64,6 +64,11 @@ let rec pp_conds out : t_field list -> unit = function
   | [hd] -> pp_cond out hd
   | hd::tl -> Printf.fprintf out "%a OR %a" pp_cond hd pp_conds tl 
 
+let rec pp_qmark out = function
+  | [] -> assert false
+  | [_] -> Printf.fprintf out "$str"
+  | _::tl -> (Printf.fprintf out "$str,"; pp_qmark out tl)
+
 let print_search_fn out db : unit =
   let sfields = List.filter (fun f -> f.f_search) db.db_fields in
   match sfields with
@@ -73,9 +78,9 @@ let print_search_fn out db : unit =
         public function search($str){
                 $sql = 'SELECT * FROM `%s` WHERE %a ORDER BY `id` DESC';
                 $stmt = $this->db->prepare($sql);
-                $stmt->execute(array($arr_val));
+                $stmt->execute(array(%a));
                 return $stmt->fetchAll();
-        }\n" db.db_name pp_conds sfields
+        }\n" db.db_name pp_conds sfields pp_qmark sfields
 
 let print_list_fn out db : unit =
   Printf.fprintf out "

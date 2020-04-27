@@ -16,6 +16,20 @@ type="Date"
 display=true
 
 [[actu_6.fields]]
+name="image"
+alias="Image"
+select=false
+type="VarChar"
+display=false
+
+[[actu_6.fields]]
+name="url"
+alias="Url"
+select=true
+type="VarChar"
+display=false
+
+[[actu_6.fields]]
 name = "content"
 alias="Contenu"
 select=false
