@@ -14,7 +14,7 @@ if(isset($_POST['id']) && %a){
     if($model->update($_POST['id'],%a)){
         $msg = '<div class=\"w3-panel w3-green\">Success</div>';
     } else {
-        $msg = '<div class=\"w3-panel w3-red\">Failure</div>';
+        $msg = '<div class=\"w3-panel w3-red\">' . $model->get_error() . '</div>';
     }
 }
 
@@ -53,6 +53,27 @@ let print out_dir db =
        Printf.fprintf out "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css\">
         <script src=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js\"></script>"
     );
+  if has_slug db then
+    Printf.fprintf out "<script type=\"text/javascript\">
+// source https://gist.github.com/codeguy/6684588
+function slug (str) {
+	str = str.replace(/^\\s+|\\s+$/g, ''); // trim
+	str = str.toLowerCase();
+
+	// remove accents, swap ñ for n, etc
+	var from = \"àáäâèéëêìíïîòóöôùúüûñç·/_,:;\";
+	var to   = \"aaaaeeeeiiiioooouuuunc------\";
+	for (var i=0, l=from.length ; i<l ; i++) {
+		str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+	}
+
+	str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
+		.replace(/\\s+/g, '-') // collapse whitespace and replace by -
+		.replace(/-+/g, '-'); // collapse dashes
+
+	return str;
+}
+</script>";
   Printf.fprintf out "
     </head>
     <body>
@@ -68,19 +89,36 @@ let print out_dir db =
   List.iter (fun fd ->
         match fd.f_type with
         | VarChar ->
-          Printf.fprintf out "
+          begin match fd.f_slug with
+            | [] ->
+              Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"text\" class=\"w3-input w3-border\" value=\"<?php echo $arr['%s'];?>\" required>
+            <input id=\"%s\" name=\"%s\" type=\"text\" class=\"w3-input w3-border\" value=\"<?php echo $arr['%s'];?>\" required>
             </p>"
-            fd.f_name fd.f_alias fd.f_name fd.f_name
+                fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name
+            | _::_ ->
+              let rec aux out = function
+                | [] -> assert false
+                | [hd] -> Printf.fprintf out "document.getElementById('%s').value" hd
+                | hd::tl ->
+                  Printf.fprintf out "document.getElementById('%s').value + '-' + %a" hd aux tl
+              in
+              Printf.fprintf out "
+            <p>
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" name=\"%s\" type=\"text\" class=\"w3-input w3-border\" pattern=\"[a-z0-9-]+\" value=\"<?php echo $arr['%s'];?>\" required>
+            <button type=\"button\" class=\"w3-btn w3-blue\" onclick=\"document.getElementById('%s').value = slug(%a);\">Autogénérer</button>
+            </p>"
+                fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name fd.f_name aux fd.f_slug
+          end
         | Date ->
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"date\" class=\"w3-input w3-border\" value=\"<?php echo $arr['%s'];?>\" required>
+            <input id=\"%s\" name=\"%s\" type=\"date\" class=\"w3-input w3-border\" value=\"<?php echo $arr['%s'];?>\" required>
             </p>"
-            fd.f_name fd.f_alias fd.f_name fd.f_name
+            fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name
         | Text ->
           Printf.fprintf out "
             <p>
@@ -92,10 +130,10 @@ let print out_dir db =
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <select name=\"%s\" class=\"w3-input w3-border\" multiple>
+            <select id=\"%s\" name=\"%s\" class=\"w3-input w3-border\" multiple>
             <?php
                 $tags = explode(\",\",$arr['%s']);"
-            fd.f_name fd.f_alias fd.f_name fd.f_name;
+            fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name;
           List.iter (fun x ->
               Printf.fprintf out "
                 if(array_in('%s',$tags)){ echo '<option selected>%s</option>'; }

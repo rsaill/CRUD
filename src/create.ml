@@ -13,7 +13,7 @@ if(%a){
     if($model->create(%a)){
         $msg = '<div class=\"w3-panel w3-green\">Success</div>';
     } else {
-        $msg = '<div class=\"w3-panel w3-red\">Failure</div>';
+        $msg = '<div class=\"w3-panel w3-red\">' . $model->get_error() . '</div>';
     }
 }
 ?>" model_name model_name
@@ -40,7 +40,28 @@ let print out_dir db =
       Printf.fprintf out "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css\">
         <script src=\"https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js\"></script>"
  );
-Printf.fprintf out "
+  if has_slug db then
+    Printf.fprintf out "<script type=\"text/javascript\">
+// source https://gist.github.com/codeguy/6684588
+function slug (str) {
+	str = str.replace(/^\\s+|\\s+$/g, ''); // trim
+	str = str.toLowerCase();
+
+	// remove accents, swap ñ for n, etc
+	var from = \"àáäâèéëêìíïîòóöôùúüûñç·/_,:;\";
+	var to   = \"aaaaeeeeiiiioooouuuunc------\";
+	for (var i=0, l=from.length ; i<l ; i++) {
+		str = str.replace(new RegExp(from.charAt(i), 'g'), to.charAt(i));
+	}
+
+	str = str.replace(/[^a-z0-9 -]/g, '') // remove invalid chars
+		.replace(/\\s+/g, '-') // collapse whitespace and replace by -
+		.replace(/-+/g, '-'); // collapse dashes
+
+	return str;
+}
+</script>";
+  Printf.fprintf out "
     </head>
     <body>
         <?php include('menu.html'); ?>
@@ -52,20 +73,38 @@ Printf.fprintf out "
         <form action=\"\" method=\"post\">" db.db_alias;
   List.iter (fun fd ->
         match fd.f_type with
-        | VarChar ->
-          Printf.fprintf out "
+          | VarChar ->
+            begin
+              match fd.f_slug with
+              | [] -> Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"text\" class=\"w3-input w3-border\" required>
+            <input id=\"%s\" name=\"%s\" type=\"text\" class=\"w3-input w3-border\" required>
             </p>"
-            fd.f_name fd.f_alias fd.f_name
+                        fd.f_name fd.f_alias fd.f_name fd.f_name
+              | _::_ ->
+                let rec aux out = function
+                  | [] -> assert false
+                  | [hd] -> Printf.fprintf out "document.getElementById('%s').value" hd
+                  | hd::tl ->
+                    Printf.fprintf out "document.getElementById('%s').value + '-' + %a" hd aux tl
+                in
+                Printf.fprintf out "
+            <p>
+            <label for=\"%s\">%s</label>
+            <input id=\"%s\" name=\"%s\" type=\"text\" class=\"w3-input w3-border\" pattern=\"[a-z0-9-]+\" required>
+            <button type=\"button\" class=\"w3-btn w3-blue\" onclick=\"document.getElementById('%s').value = slug(%a);\">Autogénérer</button>
+            </p>"
+                        fd.f_name fd.f_alias fd.f_name fd.f_name fd.f_name aux fd.f_slug
+                
+            end
         | Date ->
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <input name=\"%s\" type=\"date\" class=\"w3-input w3-border\" required>
+            <input id=\"%s\" name=\"%s\" type=\"date\" class=\"w3-input w3-border\" required>
             </p>"
-            fd.f_name fd.f_alias fd.f_name
+            fd.f_name fd.f_alias fd.f_name fd.f_name
         | Text ->
           Printf.fprintf out "
             <p>
@@ -77,7 +116,7 @@ Printf.fprintf out "
           Printf.fprintf out "
             <p>
             <label for=\"%s\">%s</label>
-            <select name=\"%s\" class=\"w3-input w3-border\" multiple required>" fd.f_name fd.f_alias fd.f_name;
+            <select id=\"%s\" name=\"%s\" class=\"w3-input w3-border\" multiple required>" fd.f_name fd.f_alias fd.f_name fd.f_name;
           List.iter (fun x ->
               Printf.fprintf out "
                 <option>%s</option>" x

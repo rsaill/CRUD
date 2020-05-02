@@ -28,6 +28,7 @@ alias="Url"
 select=true
 type="VarChar"
 display=false
+slug=["date","title"]
 
 [[actu_6.fields]]
 name = "content"
@@ -68,6 +69,7 @@ alias="Url"
 select=true
 type="VarChar"
 display=false
+slug=["artist","album_name"]
 
 [[album_6.fields]]
 name="content"
@@ -115,6 +117,7 @@ alias="Url"
 select=true
 type="VarChar"
 display=false
+slug=["date","artist"]
 
 [[concert_6.fields]]
 name="content"
@@ -154,6 +157,7 @@ alias="Url"
 select=true
 type="VarChar"
 display=false
+slug=["date","artist"]
 
 [[interview_6.fields]]
 name="content"
@@ -194,6 +198,7 @@ alias="Url"
 select=true
 type="VarChar"
 display=false
+slug=["artist","name"]
 
 [[dvd_6.fields]]
 name="content"
@@ -234,6 +239,7 @@ alias="Url"
 select=true
 type="VarChar"
 display=false
+slug=["artist","name"]
 
 [[livre_6.fields]]
 name="content"

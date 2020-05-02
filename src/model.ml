@@ -14,7 +14,14 @@ let print_create_fn out db : unit =
                 $stmt = $this->db->prepare($sql);"
     params db.db_name field_names qmarks;
     Printf.fprintf out "
-                return $stmt->execute(array(%s));
+                if($stmt->execute(array(%s))){
+                        $this->error = 'No error';
+                        return TRUE;
+                } else {
+                        $arr = $stmt->errorInfo();
+			$this->error = $arr[2];
+                        return FALSE;
+                }
         }\n" vars
 
 let print_update_fn out db : unit =
@@ -26,7 +33,14 @@ let print_update_fn out db : unit =
                 $sql = 'UPDATE `%s` SET %s WHERE `id` = ?';
                 $stmt = $this->db->prepare($sql);" params db.db_name field_eq_qmark;
   Printf.fprintf out "
-                return $stmt->execute(array(%s,$id));
+                if($stmt->execute(array(%s,$id))){
+                        $this->error = 'No error';
+                        return TRUE;
+                } else {
+                        $arr = $stmt->errorInfo();
+			$this->error = $arr[2];
+                        return FALSE;
+                }
         }\n" vars
 
 let print_select_fns out db : unit =
@@ -36,11 +50,8 @@ let print_select_fns out db : unit =
         public function select_by_%s($id){
                 $sql = 'SELECT * FROM `%s` WHERE `%s` = ? LIMIT 1';
                 $stmt = $this->db->prepare($sql);
-                if($stmt->execute(array($id))){
-                        return $stmt->fetch();
-                } else {
-                        return FALSE; 
-                }
+                $stmt->execute(array($id));
+                return $stmt->fetch();
 	}\n" f_name db.db_name f_name
     else ()
   in
@@ -52,7 +63,14 @@ let print_delete_fn out db_name : unit =
         public function delete($id){
 		$sql = 'DELETE FROM `%s` WHERE `id`= ?';
 		$stmt = $this->db->prepare($sql);
-		return $stmt->execute(array($id));
+                if($stmt->execute(array($id))){
+                        $this->error = 'No error';
+                        return TRUE;
+                } else {
+                        $arr = $stmt->errorInfo();
+			$this->error = $arr[2];
+                        return FALSE;
+                }
 	}\n" db_name
 
 
@@ -108,10 +126,15 @@ let print dir (db:t_db) : unit =
 ";
 Printf.fprintf out "class %s {
 	private $db;
+        private $error;
 
         public function __construct($db){
                 $this->db = $db;
 	}
+      
+        public function get_error(){
+                return $this->error; 
+        }
 " model_name;
   print_create_fn out db;
   print_select_fns out db;

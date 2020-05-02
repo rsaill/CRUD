@@ -114,7 +114,15 @@ let read_field db_name toml_t : t_field =
         | Error msg -> error ("Error reading option search for field '"^db_name^"."^f_name^"' ("^msg^").")
       end
   in
-  { f_name; f_alias; f_type; f_select; f_display; f_search }
+  let f_slug = match Table.find_opt (Toml.key "slug") toml_t with
+    | None -> []
+    | Some v ->
+      begin match v with
+        | TArray (TomlTypes.NodeString lst) -> lst
+        | _ -> error ("Error reading slug for field '"^db_name^"."^f_name^"' (expecting an array of strings).")
+      end
+  in
+  { f_name; f_alias; f_type; f_select; f_display; f_search; f_slug }
 
 let read_db (db_name:string) (toml_t:TomlTypes.table) : t_db =
   let open TomlTypes in

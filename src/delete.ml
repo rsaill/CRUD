@@ -13,7 +13,7 @@ if(isset($_POST['id'])){
     if($model->delete($_POST['id'])){
         $msg = '<div class=\"w3-panel w3-green\">Success</div>';
     } else {
-        $msg = '<div class=\"w3-panel w3-red\">Failure</div>';
+        $msg = '<div class=\"w3-panel w3-red\">' . $model->get_error() . '</div>';
     }
 }
 
